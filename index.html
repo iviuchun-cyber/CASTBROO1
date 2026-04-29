@@ -960,8 +960,8 @@
     document.getElementById('navLinks').classList.toggle('open');
   }
 
-  /* ── Submit — mailto orqali to'g'ridan-to'g'ri emailga yuborish ── */
-  function handleSubmit() {
+  /* ── Submit — Formspree orqali yuborish ── */
+  async function handleSubmit() {
     const name = document.getElementById('senderName').value.trim();
     const email = document.getElementById('senderEmail').value.trim();
     const msg = document.getElementById('senderMsg').value.trim();
@@ -971,26 +971,42 @@
       return;
     }
 
-    const subject = encodeURIComponent('CASTBROO saytidan xabar — ' + name);
-    const body = encodeURIComponent(
-      'Ism: ' + name + '\n' +
-      'Email: ' + (email || 'ko\'rsatilmagan') + '\n\n' +
-      'Xabar:\n' + msg + '\n\n' +
-      '---\nCASTBROO Premium Auto Salon saytidan yuborildi.'
-    );
-
-    window.location.href = 'mailto:iviuchun@gmail.com?subject=' + subject + '&body=' + body;
-
     const btn = document.querySelector('.submit-btn');
-    btn.textContent = '✅ XABAR YUBORILDI!';
-    btn.style.background = 'var(--neon-blue)';
-    btn.style.color = '#050510';
-    btn.style.boxShadow = '0 0 40px rgba(0,243,255,0.7)';
+    btn.textContent = '⏳ YUBORILMOQDA...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('https://formspree.io/f/mvzdeojn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          email: email || 'ko\'rsatilmagan',
+          message: msg
+        })
+      });
+
+      if (response.ok) {
+        btn.textContent = '✅ XABAR YUBORILDI!';
+        btn.style.background = 'var(--neon-blue)';
+        btn.style.color = '#050510';
+        btn.style.boxShadow = '0 0 40px rgba(0,243,255,0.7)';
+        document.getElementById('senderName').value = '';
+        document.getElementById('senderEmail').value = '';
+        document.getElementById('senderMsg').value = '';
+      } else {
+        btn.textContent = '❌ XATO! Qayta urining';
+      }
+    } catch(e) {
+      btn.textContent = '❌ XATO! Qayta urining';
+    }
+
     setTimeout(() => {
       btn.textContent = '⚡ XABAR YUBORISH';
       btn.style.background = '';
       btn.style.color = '';
       btn.style.boxShadow = '';
+      btn.disabled = false;
     }, 3000);
   }
 
